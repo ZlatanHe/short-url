@@ -4,6 +4,8 @@
 ## 运行环境
 - Mysql（standalone模式或proxy代理均可，本demo的DB客户端不适配分布式DB）
 - REDIS（standalone模式或proxy代理均可，本demo的REDIS客户端不适配主从模式或分布式模式）
+- Maven
+- Java 8
 
 ## DDL
 - 运行本demo前请先执行本DDL
@@ -29,6 +31,13 @@ spring.datasource.password=123456
 
 spring.redis.host=127.0.0.1
 spring.redis.port=6379
+```
+
+## 运行
+```
+cd ${project.dir}
+mvn clean package
+java -jar ./target/short-url-0.0.1-SNAPSHOT.jar
 ```
 
 ## 访问demo页面
