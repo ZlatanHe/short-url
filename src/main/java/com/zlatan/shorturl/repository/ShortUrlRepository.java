@@ -79,16 +79,16 @@ public class ShortUrlRepository {
     public void saveCount2DB() {
         Date now = new Date();
         String taskKey = DateTimeUtils.format2Hour(now);
-        if (stringRedisTemplate.opsForValue().increment(taskKey) >= 1) {
+        if (stringRedisTemplate.opsForValue().increment(taskKey) > 1) {
             return;
         }
-        BoundHashOperations<String, String, Long> boundHashOps =
+        BoundHashOperations<String, String, String> boundHashOps =
                 stringRedisTemplate.boundHashOps(REQ_COUNT_REDIS_KEY);
-        try (Cursor<Map.Entry<String, Long>> cursor = boundHashOps.scan(
+        try (Cursor<Map.Entry<String, String>> cursor = boundHashOps.scan(
                 ScanOptions.scanOptions().count(10).build())) {
             while (cursor.hasNext()) {
-                Map.Entry<String, Long> entry = cursor.next();
-                shortUrlDAO.updateCount(entry.getKey(), entry.getValue());
+                Map.Entry<String, String> entry = cursor.next();
+                shortUrlDAO.updateCount(entry.getKey(), Long.valueOf(entry.getValue()));
             }
         } catch (Exception e) {
             log.error("[ShortUrlRepository-saveCount2DB] failed.");
