@@ -1,5 +1,6 @@
 package com.zlatan.shorturl.dto;
 
+import com.fasterxml.jackson.databind.deser.DataFormatReaders;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,6 +14,8 @@ import java.util.regex.Pattern;
 public class ShortUrlGenerateRequestDTO {
 
     private static final Pattern CODE_PATTERN = Pattern.compile("[0-9a-zA-Z]{4,16}");
+
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s]+");
 
     private String url;
 
@@ -35,6 +38,10 @@ public class ShortUrlGenerateRequestDTO {
     public static void adapt(ShortUrlGenerateRequestDTO request) {
         if (StringUtils.isBlank(request.getUrl())) {
             throw new IllegalArgumentException("url is null");
+        }
+        Matcher urlMatcher = URL_PATTERN.matcher(request.getUrl());
+        if (!urlMatcher.matches()) {
+            throw new IllegalArgumentException("invalid url");
         }
         if (StringUtils.isNotBlank(request.getCode())) {
             Matcher matcher = CODE_PATTERN.matcher(request.getCode());

@@ -24,7 +24,7 @@ public class ShortUrlController {
     public String generate(@RequestBody ShortUrlGenerateRequestDTO request) {
         ShortUrlGenerateRequestDTO.adapt(request); // 参数检查及适配
         if (StringUtils.isBlank(request.getCode())) {
-            return shortUrlService.generateShortUrl(
+            return "http://127.0.0.1:8080/" + shortUrlService.generateShortUrl(
                     request.getUrl(),
                     request.getLength(),
                     request.getCharset()
@@ -33,7 +33,7 @@ public class ShortUrlController {
         if (!shortUrlService.generateShortUrl(request.getCode(), request.getUrl())) {
             throw new ShortUrlGenerateException("Duplicated short url!");
         }
-        return request.getCode();
+        return "http://127.0.0.1:8080/" + request.getCode();
     }
 
     @GetMapping("/{shortUrl:[0-9a-zA-Z]{4,16}}")
@@ -42,7 +42,8 @@ public class ShortUrlController {
 
         ModelAndView modelAndView = new ModelAndView();
         if (StringUtils.isBlank(url)) {
-            modelAndView.setViewName("forward:idx.html");
+            modelAndView.setViewName("forward:index.html");
+            return modelAndView;
         }
         RedirectView redirectView = new RedirectView();
         redirectView.setStatusCode(HttpStatus.MOVED_PERMANENTLY);
@@ -50,5 +51,23 @@ public class ShortUrlController {
         modelAndView.setView(redirectView);
 
         return modelAndView;
+    }
+
+    @GetMapping("/queryRequestCount")
+    public Long queryRequestCount(String shortUrl) {
+        if (StringUtils.isBlank(shortUrl)) {
+            return 0L;
+        }
+        int protocolEnd = shortUrl.indexOf("://");
+        String code = shortUrl;
+        if (protocolEnd != -1) {
+            code = code.substring(protocolEnd + 3);
+            int hostEnd = code.indexOf("/");
+            if (hostEnd == -1) {
+                return 0L;
+            }
+            code = code.substring(hostEnd + 1);
+        }
+        return shortUrlService.queryRequestCountByShortUrl(code);
     }
 }

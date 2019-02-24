@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>短网址服务</title>
+</head>
+
+<body>
+
+<h2>短网址服务Demo</h2>
+
+<h3>短网址生成</h3>
+<form>
+    原始网址: <input type="text" id="url" required>
+    <br>
+    指定短网址: <input type="text" id="shortUrl">
+    <br>
+    长度: <input type="text" id="length">
+    <br>
+    字符集:<select id="charset">
+    <option value="0">默认</option>
+    <option value="1">小写字母＋数字</option>
+    <option value="2">大写字母＋数字</option>
+    <option value="3">小写字母</option>
+    <option value="4">大写字母</option>
+</select>
+    <br><br>
+    <button type="button" onclick="generate()">生成</button>
+</form>
+
+<br>
+生成短网址: <p id = "result"></p>
+
+<br>
+<h3>短网址访问查询</h3>
+
+<form>
+    短网址: <input type="text" id="queriedShortUrl" required>
+    <br>
+    <button type="button" onclick="queryReqCount()">查询</button>
+</form>
+<br>
+访问次数: <p id = "reqCount"></p>
+
+<script>
+        function generate() {
+            var url = document.getElementById("url").value.trim();
+            if (url == null || url.match(/http[s]{0,1}?:\/\/[^\s]+/) == null) {
+                alert("请输入正确格式的原始网址!");
+                return;
+            }
+
+            var shortUrl = document.getElementById("shortUrl").value.trim();
+            if (shortUrl.length > 0 && shortUrl.match(/[0-9a-zA-Z]{4,16}/) == null) {
+                alert("请输入正确格式的指定短网址(4到16位数字及大小写字母)!");
+                return;
+            }
+
+            generateObj = new Object();
+            generateObj.url = url;
+            if (shortUrl.length > 0) {
+                generateObj.code = shortUrl;
+            } else {
+                var length = document.getElementById("length").value.trim();
+                if (length.length <= 0 || length.match(/[0-9]{1,2}/g) == null) {
+                    alert("请输入正确格式的长度(4 ~ 16)!");
+                    return;
+                }
+                var charset = document.getElementById("charset").value;
+                if (charset.length == 0) {
+                    charset = "0";
+                }
+                generateObj.length = parseInt(length);
+                generateObj.charset = parseInt(charset);
+            }
+
+            var data = JSON.stringify(generateObj);
+
+            var req = createRequest();
+            var result = document.getElementById("result");
+            req.onload = function() {
+                if (req.status == 200) {
+                    var resp = req.responseText;
+                    result.innerHTML = resp;
+                } else {
+                    alert("请求错误");
+                }
+            }
+
+            req.open("POST", "http://127.0.0.1:8080/generate", true);
+            req.setRequestHeader("Content-type", "application/json");
+            req.send(data);
+        }
+
+        function queryReqCount() {
+            var shortUrl = document.getElementById("queriedShortUrl").value.trim();
+            var req = createRequest();
+            var count = document.getElementById("reqCount");
+
+            req.onload = function() {
+                if (req.status == 200) {
+                    count.innerHTML = req.responseText;
+                } else {
+                    alert("请求错误");
+                }
+            }
+
+            req.open("GET", "http://127.0.0.1:8080/queryRequestCount?shortUrl=" + shortUrl , true);
+            req.send();
+        }
+
+        function createRequest() {
+            var xmlhttp;
+            if (window.XMLHttpRequest) {
+             xmlhttp = new XMLHttpRequest();
+            } else {
+             xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            return xmlhttp;
+        }
+    </script>
+
+</body>
+</html>
