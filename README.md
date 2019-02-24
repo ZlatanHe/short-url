@@ -30,3 +30,6 @@ spring.datasource.password=123456
 spring.redis.host=127.0.0.1
 spring.redis.port=6379
 ```
+
+## 访问demo页面
+请访问 `http://127.0.0.1:8080` 即可
